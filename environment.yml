@@ -1,0 +1,20 @@
+name: multimodal_vae_env
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - torchvision
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - nltk
+  - tqdm
+  - scipy
+  - pip
+  - pip:
+    - torchtext
+    - sentencepiece
+    - "--find-links https://download.pytorch.org/whl/torch/"
+    - torch==2.4.1+cu118
