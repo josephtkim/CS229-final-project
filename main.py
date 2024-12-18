@@ -34,6 +34,7 @@ def main():
         weight_decay=0.02
     )
 
+    # Load dataset
     train_dataset = get_celeba_subset(
         config['data_path'],
         subset_size=5000,

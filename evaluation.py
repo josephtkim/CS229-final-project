@@ -11,7 +11,6 @@ import torch.nn.functional as F
 from textwrap import wrap
 import textwrap
 
-
 from config import config
 from data import CelebADataset, get_celeba_subset
 from models import MultimodalVAE
@@ -87,7 +86,6 @@ def visualize_bidirectional_generation(model, dataset, device, num_samples=4, sa
                    dpi=300, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
 
-
 def evaluate_attributes(model, dataset, device):
     model.eval()
     all_preds = []
@@ -132,7 +130,7 @@ def visualize_random_examples(dataset, num_samples=5, save_dir='eval_results'):
     total_samples = len(dataset)
     random_indices = np.random.choice(total_samples, num_samples, replace=False)
     
-    fig, axes = plt.subplots(1, num_samples, figsize=(2.5*num_samples, 3))
+    fig, axes = plt.subplots(1, num_samples, figsize=(3*num_samples, 4))
     
     if num_samples == 1:
         axes = [axes]
@@ -146,20 +144,20 @@ def visualize_random_examples(dataset, num_samples=5, save_dir='eval_results'):
         ax.imshow(show_img.permute(1,2,0).numpy())
         ax.axis('off')
         
-        wrapped_caption = '\n'.join(wrap(caption, width=30)) 
-        ax.text(0.5, -0.05, wrapped_caption,
+        wrapped_caption = '\n'.join(wrap(caption, width=25))
+        ax.text(0.5, -0.1, wrapped_caption,
                ha='center', va='top',
                transform=ax.transAxes,
                wrap=True,
-               fontsize=8)
+               fontsize=16,
+               bbox=dict(facecolor='white', alpha=0.8))
     
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.2) 
+    plt.subplots_adjust(bottom=0.3)
     plt.savefig(os.path.join(save_dir, 'random_dataset_examples.png'),
                 bbox_inches='tight',
                 dpi=300)
     plt.close(fig)
-
 
 def visualize_latent_space(model, dataset, device, num_visualizations=4, save_dir='eval_results'):
     os.makedirs(save_dir, exist_ok=True)
@@ -211,7 +209,6 @@ def visualize_latent_space(model, dataset, device, num_visualizations=4, save_di
     plt.close()
     
 def evaluate_consistency(model, dataset, device, num_samples=5000):
-    """Evaluates consistency score for both matching and mismatched image-text pairs"""
     model.eval()
     matching_scores = []
     mismatched_scores = []
@@ -246,7 +243,6 @@ def evaluate_consistency(model, dataset, device, num_samples=5000):
         'matching': (np.mean(matching_scores), np.std(matching_scores)),
         'mismatched': (np.mean(mismatched_scores), np.std(mismatched_scores))
     }
-
     
 def visualize_results_grid(model, dataset, device, num_examples=3, save_dir='eval_results', iteration=None):
     os.makedirs(save_dir, exist_ok=True)
@@ -513,11 +509,7 @@ def calculate_consistency_metrics(model, dataset, device, num_samples=1000):
         'all_mismatched_scores': mismatched_scores
     }
 
-def visualize_consistency_pairs(model, dataset, device, num_samples=4, save_dir='eval_results'):
-    """
-    Visualizes pairs using KL divergence-based consistency scores in a single row format.
-    Each example shows the image, caption, similarity score, and match/mismatch label.
-    """
+def visualize_consistency_pairs(model, dataset, device, num_samples=3, save_dir='eval_results'):
     os.makedirs(save_dir, exist_ok=True)
     model.eval()
     
@@ -531,8 +523,8 @@ def visualize_consistency_pairs(model, dataset, device, num_samples=4, save_dir=
     indices = np.random.choice(len(dataset), num_samples, replace=False)
     mismatched_indices = np.roll(indices, 1)
     
-    fig, axes = plt.subplots(1, num_samples*2, figsize=(20, 5))
-    plt.subplots_adjust(wspace=0.3)
+    fig, axes = plt.subplots(1, num_samples*2, figsize=(24, 12))
+    plt.subplots_adjust(wspace=0.4, bottom=0.2)
     
     with torch.no_grad():
         for i, (idx, mismatch_idx) in enumerate(zip(indices, mismatched_indices)):
@@ -551,30 +543,38 @@ def visualize_consistency_pairs(model, dataset, device, num_samples=4, save_dir=
             )).item()
             match_score = 1 / (1 + kl_match)
             
+            # First image (matching pair)
             ax = axes[i*2]
             show_img = (image[0].cpu() + 1) / 2
             ax.imshow(show_img.permute(1,2,0).numpy())
             ax.axis('off')
             
-            wrapped_caption = '\n'.join(textwrap.wrap(caption, width=30))
-            ax.text(0.5, -0.1, wrapped_caption, 
-                   ha='center', va='top', 
+            wrapped_caption = '\n'.join(textwrap.wrap(caption, width=25))
+            ax.text(0.5, -0.25, wrapped_caption, 
+                   ha='center', va='center',
                    transform=ax.transAxes,
-                   fontsize=8,
-                   color='black')
+                   fontsize=18,
+                   bbox=dict(facecolor='white', 
+                           edgecolor='black',
+                           pad=5,
+                           alpha=0.9))
                    
             score_color = 'green' if match_score > optimal_threshold else 'red'
-            ax.text(0.5, -0.25, f'Score: {match_score:.3f}',
-                   ha='center', va='top',
+            ax.text(0.5, -0.55, f'Score: {match_score:.3f}',
+                   ha='center', va='center',
                    transform=ax.transAxes,
-                   fontsize=8,
+                   fontsize=18,
+                   fontweight='bold',
                    color=score_color)
-            ax.text(0.5, -0.35, 'MATCH' if match_score > optimal_threshold else 'MISMATCH',
-                   ha='center', va='top',
+                   
+            ax.text(0.5, -0.75, 'MATCH' if match_score > optimal_threshold else 'MISMATCH',
+                   ha='center', va='center',
                    transform=ax.transAxes,
-                   fontsize=8,
+                   fontsize=18,
+                   fontweight='bold',
                    color=score_color)
             
+            # Second image (mismatched pair)
             mismatched_sample = dataset[mismatch_idx]
             mismatched_attrs = mismatched_sample['attributes'].unsqueeze(0).to(device)
             mismatched_caption = mismatched_sample['caption']
@@ -591,39 +591,37 @@ def visualize_consistency_pairs(model, dataset, device, num_samples=4, save_dir=
             ax.imshow(show_img.permute(1,2,0).numpy())
             ax.axis('off')
             
-            wrapped_caption = '\n'.join(textwrap.wrap(mismatched_caption, width=30))
-            ax.text(0.5, -0.1, wrapped_caption,
-                   ha='center', va='top',
+            wrapped_caption = '\n'.join(textwrap.wrap(mismatched_caption, width=25))
+            ax.text(0.5, -0.25, wrapped_caption,
+                   ha='center', va='center',
                    transform=ax.transAxes,
-                   fontsize=8,
-                   color='black')
+                   fontsize=18,
+                   bbox=dict(facecolor='white',
+                           edgecolor='black',
+                           pad=5,
+                           alpha=0.9))
                    
             score_color = 'green' if mismatch_score > optimal_threshold else 'red'
-            ax.text(0.5, -0.25, f'Score: {mismatch_score:.3f}',
-                   ha='center', va='top',
+            ax.text(0.5, -0.55, f'Score: {mismatch_score:.3f}',
+                   ha='center', va='center',
                    transform=ax.transAxes,
-                   fontsize=8,
+                   fontsize=18,
+                   fontweight='bold',
                    color=score_color)
-            ax.text(0.5, -0.35, 'MATCH' if mismatch_score > optimal_threshold else 'MISMATCH',
-                   ha='center', va='top',
+            ax.text(0.5, -0.75, 'MATCH' if mismatch_score > optimal_threshold else 'MISMATCH',
+                   ha='center', va='center',
                    transform=ax.transAxes,
-                   fontsize=8,
+                   fontsize=18,
+                   fontweight='bold',
                    color=score_color)
     
     plt.savefig(os.path.join(save_dir, 'consistency_pairs.png'),
-                bbox_inches='tight', dpi=300, pad_inches=0.5)
+                bbox_inches='tight', dpi=300, pad_inches=0.7)
     plt.close(fig)
     
     return metrics
     
 def visualize_consistency_confusion_matrix(metrics, save_dir='eval_results'):
-    """
-    Creates and visualizes a confusion matrix for the consistency scores.
-    
-    Args:
-        metrics: Dictionary containing matching and mismatched scores
-        save_dir: Directory to save the visualization
-    """
     os.makedirs(save_dir, exist_ok=True)
     
     matching_scores = metrics['all_matching_scores']
@@ -678,20 +676,140 @@ def visualize_consistency_confusion_matrix(metrics, save_dir='eval_results'):
         'f1': f1
     }
 
+def visualize_paired_latent_spaces_2d(model, dataset, device, num_samples=200, save_dir='eval_results', perplexity=30):
+    import numpy as np
+    from sklearn.manifold import TSNE
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import ConnectionPatch
+    import seaborn as sns
+    
+    os.makedirs(save_dir, exist_ok=True)
+    model.eval()
+    
+    # Collect embeddings
+    z_images = []
+    z_texts = []
+    labels = []
+    
+    # Find index for male attribute
+    male_idx = None
+    for k, v in model.idx_to_attribute.items():
+        if v == 'male':
+            male_idx = k
+            break
+            
+    if male_idx is None:
+        raise ValueError("Attribute 'male' not found in model.idx_to_attribute")
+    
+    # Collect samples
+    with torch.no_grad():
+        for i in range(min(num_samples, len(dataset))):
+            sample = dataset[i]
+            image = sample['image'].unsqueeze(0).to(device)
+            attrs = sample['attributes'].unsqueeze(0).to(device)
+            
+            z_img, _, _ = model.encode_image(image)
+            z_txt, _, _ = model.encode_text(attrs)
+            
+            z_images.append(z_img.cpu().numpy()[0])
+            z_texts.append(z_txt.cpu().numpy()[0])
+            
+            label = "male" if attrs[0, male_idx].item() == 1 else "female"
+            labels.append(label)
+    
+    z_images = np.array(z_images)
+    z_texts = np.array(z_texts)
+    
+    # Compute t-SNE embeddings separately
+    tsne = TSNE(n_components=2, perplexity=perplexity, n_iter=1000, random_state=42)
+    z_img_tsne = tsne.fit_transform(z_images)
+    z_txt_tsne = tsne.fit_transform(z_texts)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), gridspec_kw={'wspace': 0.3})
+    
+    colors = {'male': '#2ecc71', 'female': '#e74c3c'}
+    
+    # Plot image embeddings
+    for label in colors:
+        mask = np.array(labels) == label
+        ax1.scatter(
+            z_img_tsne[mask, 0],
+            z_img_tsne[mask, 1],
+            c=colors[label],
+            label=f'Image ({label})',
+            alpha=0.7,
+            s=80
+        )
+    ax1.set_title('Image Embeddings', fontsize=12)
+    ax1.set_xlabel('t-SNE 1')
+    ax1.set_ylabel('t-SNE 2')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    # Plot text embeddings
+    for label in colors:
+        mask = np.array(labels) == label
+        ax2.scatter(
+            z_txt_tsne[mask, 0],
+            z_txt_tsne[mask, 1],
+            c=colors[label],
+            label=f'Text ({label})',
+            alpha=0.7,
+            s=80
+        )
+    ax2.set_title('Text Embeddings', fontsize=12)
+    ax2.set_xlabel('t-SNE 1')
+    ax2.set_ylabel('t-SNE 2')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+    
+    num_lines = min(30, num_samples)
+    for i in range(num_lines):
+        line_color = colors[labels[i]]
+        con = ConnectionPatch(
+            xyA=(z_img_tsne[i, 0], z_img_tsne[i, 1]),
+            xyB=(z_txt_tsne[i, 0], z_txt_tsne[i, 1]),
+            coordsA="data",
+            coordsB="data",
+            axesA=ax1,
+            axesB=ax2,
+            color=line_color,
+            alpha=0.4,
+            linestyle="--",
+            linewidth=0.8
+        )
+        fig.add_artist(con)
+    
+    plt.suptitle('Cross-Modal Latent Space Alignment', fontsize=14, y=1.02)
+    
+    plt.savefig(
+        os.path.join(save_dir, 'paired_tsne_2d_gender_colored_lines.png'),
+        dpi=300,
+        bbox_inches='tight',
+        pad_inches=0.5
+    )
+    plt.close()
+    
+    return {
+        'num_samples': num_samples,
+        'num_lines_shown': num_lines,
+        'perplexity': perplexity,
+        'label_distribution': {label: labels.count(label) for label in set(labels)}
+    }
+
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model, dataset = load_model_and_data(device, model_checkpoint='final_model.pt')
     
-    metrics = visualize_consistency_pairs(model, dataset, device)
+    #metrics = visualize_consistency_pairs(model, dataset, device)
 
-    
-    scores = evaluate_consistency(model, dataset, device)
-    print(f"Consistency Classification Accuracy: {scores['accuracy']:.3f}")
-    print(f"Threshold used: {scores['threshold']}")
-    print(f"Correct classifications: {scores['correct']}/{scores['total']}")
+    #scores = evaluate_consistency(model, dataset, device)
+    #print(f"Consistency Classification Accuracy: {scores['accuracy']:.3f}")
+    #print(f"Threshold used: {scores['threshold']}")
+    #print(f"Correct classifications: {scores['correct']}/{scores['total']}")
     
     # Visualize pairs with scores
-    visualize_consistency_pairs(model, dataset, device)
+    #visualize_consistency_pairs(model, dataset, device)
    
     #for i in range(1, 11):
     #    visualize_results_grid(model, dataset, device, iteration=i)
@@ -701,4 +819,7 @@ if __name__ == "__main__":
     #visualize_generation_steps(model, dataset, device, num_samples=4)
     # visualize_latent_space(model, dataset, device, num_visualizations=4)
     #visualize_bidirectional_generation(model, dataset, device, num_samples=4)
+    
     #visualize_random_examples(dataset, num_samples=5)
+    
+    stats = visualize_paired_latent_spaces_2d(model, dataset, device)

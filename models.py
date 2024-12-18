@@ -195,6 +195,7 @@ class MultimodalVAE(nn.Module):
             9: 'wearing_lipstick'
         }
 
+        # Load VGG features for perceptual loss if needed
         self.vgg = vgg16(weights=VGG16_Weights.IMAGENET1K_V1).features[:16].eval().to(next(self.parameters()).device)
         for param in self.vgg.parameters():
             param.requires_grad = False

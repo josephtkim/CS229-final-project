@@ -38,6 +38,7 @@ def train_step(model, discriminator, batch, optimizer_G, optimizer_D, device, ep
 
     optimizer_G.zero_grad()
 
+    # Use model's vgg for perceptual loss
     with torch.no_grad():
         target_feats = model.vgg(images)
     recon_feats = model.vgg(outputs['recon_images'])

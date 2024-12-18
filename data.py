@@ -13,12 +13,10 @@ from torchvision import transforms
 from utils import clean_and_validate_attributes, generate_natural_description, remove_punc_special
 
 def cache_dataset(dataset, cache_file):
-    """Cache dataset to disk"""
     with open(cache_file, 'wb') as f:
         pickle.dump(dataset, f)
 
 def load_cached_dataset(cache_file):
-    """Load dataset from cache"""
     with open(cache_file, 'rb') as f:
         return pickle.load(f)
 
@@ -27,13 +25,12 @@ def load_pose_annotations(root_dir):
     pose_data = {}
 
     with open(pose_file, 'r') as f:
-        # Skip first two lines (count and header)
         next(f)
         next(f)
 
         for line in f:
             parts = line.strip().split()
-            if len(parts) == 4: # image_name, yaw, pitch, roll
+            if len(parts) == 4:  # image_name, yaw, pitch, roll
                 img_id = parts[0].replace('.jpg', '')
                 pose_data[img_id] = {
                     'yaw': float(parts[1]),
@@ -49,12 +46,13 @@ def is_good_pose(pose, thresholds):
             abs(pose['roll']) <= thresholds['roll'])
 
 def load_celeba_dataset_with_annotations(root_dir):
+    # Pose thresholds in degrees
     POSE_THRESHOLDS = {
         'yaw': 20.0,
         'pitch': 15.0,
         'roll': 15.0
     }
-
+    
     pose_data = load_pose_annotations(root_dir)
 
     SELECTED_ATTRIBUTES = [
@@ -66,7 +64,7 @@ def load_celeba_dataset_with_annotations(root_dir):
 
     attr_file = os.path.join(root_dir, 'CelebAMask-HQ-attribute-anno.txt')
     with open(attr_file, 'r') as f:
-        next(f)  # Skip first line (number of images)
+        next(f) # Skip first line (number of images)
         attr_names = next(f).strip().split()
         attr_data = []
         for line in f:
@@ -76,7 +74,7 @@ def load_celeba_dataset_with_annotations(root_dir):
                 attr_data.append(values)
 
     attr_df = pd.DataFrame(attr_data, columns=attr_names)
-    attr_df = (attr_df + 1) // 2  # Convert -1/1 to 0/1
+    attr_df = (attr_df + 1) // 2
 
     dataset = []
     filtered_stats = {
@@ -89,6 +87,7 @@ def load_celeba_dataset_with_annotations(root_dir):
         img_id = str(idx)
         filtered_stats['total'] += 1
 
+        # Check pose first
         if img_id not in pose_data or not is_good_pose(pose_data[img_id], POSE_THRESHOLDS):
             filtered_stats['pose_filtered'] += 1
             continue
@@ -97,10 +96,12 @@ def load_celeba_dataset_with_annotations(root_dir):
         if not os.path.exists(img_path):
             continue
 
+        # Load and resize image
         image = Image.open(img_path).convert('RGB')
         image = image.resize((64, 64), Image.Resampling.LANCZOS)
         image = np.array(image)
 
+        # Get attributes
         attrs = []
         for attr in SELECTED_ATTRIBUTES:
             if attr_df.loc[idx, attr] == 1:
@@ -111,11 +112,13 @@ def load_celeba_dataset_with_annotations(root_dir):
         if 'male' not in attrs:
             attrs.append('female')
 
+        # Only include if we have at least 2 attributes
         if len(attrs) < 2:
             continue
 
         description = generate_natural_description(attrs)
 
+        # Store pose information with the data
         dataset.append({
             'img_id': img_id,
             'image': image,
@@ -142,7 +145,6 @@ def filter_by_resolution_and_sharpness(dataset, min_resolution=(64,64)):
 
 @lru_cache(maxsize=None)
 def get_celeba_dataset(root_dir, cache_path='celeba_dataset_cache.pkl'):
-    """Get CelebA-HQ dataset with caching"""
     if os.path.exists(cache_path):
         print("Loading dataset from cache...")
         return load_cached_dataset(cache_path)
@@ -150,8 +152,10 @@ def get_celeba_dataset(root_dir, cache_path='celeba_dataset_cache.pkl'):
     print("Processing CelebA-HQ dataset from scratch...")
     dataset, attributes_df = load_celeba_dataset_with_annotations(root_dir)
 
+    # Filter dataset if needed
     filtered_dataset = filter_by_resolution_and_sharpness(dataset, min_resolution=(64,64))
 
+    # Cache the processed dataset
     cache_dataset(filtered_dataset, cache_path)
     print("Final dataset size:", len(filtered_dataset))
     return filtered_dataset
@@ -167,12 +171,14 @@ def get_celeba_subset(root_dir, subset_size=5000, random_subset=True, cache_path
 
     print(f"Processing CelebA-HQ {method} gender-balanced subset of {subset_size} samples from scratch...")
 
+    # Get full dataset
     full_dataset = get_celeba_dataset(root_dir, cache_path)
 
     if subset_size > len(full_dataset):
         print(f"Warning: Requested subset size {subset_size} is larger than dataset size {len(full_dataset)}")
         subset_size = len(full_dataset)
 
+    # Filter examples based on minimum attribute count
     min_count = 3
     def has_minimum_attributes(item, min_count):
         attributes = item.get('attributes', [])
@@ -181,6 +187,7 @@ def get_celeba_subset(root_dir, subset_size=5000, random_subset=True, cache_path
     filtered_dataset = [item for item in full_dataset if has_minimum_attributes(item, min_count)]
     print(f"Dataset filtered to {len(filtered_dataset)} examples with at least {min_count} attributes.")
 
+    # Categorize by gender
     male_examples, female_examples = [], []
     for item in filtered_dataset:
         if 'male' in item['attributes']:
@@ -191,6 +198,7 @@ def get_celeba_subset(root_dir, subset_size=5000, random_subset=True, cache_path
     print(f"Total male examples: {len(male_examples)}")
     print(f"Total female examples: {len(female_examples)}")
 
+    # Target size per gender
     target_size = subset_size // 2
     random.seed(seed)
 
@@ -207,6 +215,7 @@ def get_celeba_subset(root_dir, subset_size=5000, random_subset=True, cache_path
 
     print(f"\nFinal gender-balanced subset: {len(balanced_subset)} (Male: {len(selected_males)}, Female: {len(selected_females)})")
 
+    # Cache subset
     cache_dataset(balanced_subset, subset_cache_path)
     print(f"Subset cached at: {subset_cache_path}")
     return balanced_subset
