@@ -96,7 +96,7 @@ The model uses a three-phase training strategy:
 If you use this code in your research, please cite:
 
 ```bibtex
-@article{josephtkim_mmvae,
+@article{multimodalVAE,
    title={Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks},
    author={Kim, Joseph Taewoo},
    year={2024}
