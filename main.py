@@ -3,11 +3,12 @@ import torch
 import numpy as np
 import random
 from torch.utils.data import DataLoader
-from config import config
-from data import get_celeba_subset, CelebADataset, custom_collate_fn, visualize_dataset_samples
-from models import MultimodalVAE, PatchDiscriminator
-from training import run_phased_training, TrainingManager
-from visualization import visualize_results
+
+from src.config import config
+from src.data import get_celeba_subset, CelebADataset, custom_collate_fn, visualize_dataset_samples
+from src.models import MultimodalVAE, PatchDiscriminator
+from src.training import run_phased_training, TrainingManager
+from src.visualization import visualize_results
 
 def main():
     torch.manual_seed(config['seed'])
