@@ -99,6 +99,7 @@ If you use this code in your research, please cite:
 @misc{multimodalVAE,
   author={Kim, Joseph Taewoo},
   title={Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks},
+  note={Independent research project; code available at \url{https://github.com/josephtkim/Multimodal-VAE}},
   year={2024}
 }
 ```
