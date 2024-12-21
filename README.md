@@ -9,7 +9,7 @@ The model consists of two VAEs (Text VAE and Image VAE) with a shared latent spa
 - Text-to-image generation
 - Image-to-text generation
 
-![Model Architecture](assets/architecture.png)
+![Model Architecture](assets/full-architecture.png)
 *Full architecture showing Text VAE and Image VAE components with cross-modal pathways and discriminator.*
 
 ## Results
@@ -22,14 +22,14 @@ The model consists of two VAEs (Text VAE and Image VAE) with a shared latent spa
 *Examples of consistency checking between text-image pairs with their similarity scores.*
 
 ### Latent Space Visualization
-![Latent Space Alignment](assets/latent_space.png)
+![Latent Space Alignment](assets/paired_tsne_2d_gender.png)
 *t-SNE visualization of image and text embeddings in the shared latent space, showing clear gender-based clustering and alignment between modalities.*
 
 ### Cross-Modal Generation Examples
-![Text to Image Generation](assets/text_to_image.png)
+![Text to Image Generation](assets/text-to-image.png)
 *Text-to-image generation examples showing the model's ability to generate faces matching textual descriptions.*
 
-![Image to Text Generation](assets/image_to_text.png)
+![Image to Text Generation](assets/image-to-text.png)
 *Image-to-text generation examples demonstrating accurate attribute extraction and description generation.*
 
 ## Dataset
@@ -39,7 +39,7 @@ We use the CelebAMask-HQ dataset (Lee et al., 2020) with the following specifica
 - Images resized to 64x64 resolution (original 512x512)
 - 10 binary attributes (young, male/female, smiling, eyeglasses, black hair, blond hair, bald, mustache, wearing lipstick)
 
-![Dataset Examples](assets/dataset_examples.png)
+![Dataset Examples](assets/random_dataset_examples.png)
 *Examples from the CelebAMask-HQ dataset with corresponding text descriptions.*
 
 The CelebAMask-HQ dataset is available for non-commercial research purposes only. For more details, visit the [CelebAMask-HQ project page](https://mmlab.ie.cuhk.edu.hk/projects/CelebA/CelebAMask_HQ.html).
