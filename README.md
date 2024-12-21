@@ -1,6 +1,6 @@
 # Multimodal VAE for Text-Image Tasks
 
-This repository contains the implementation of the multimodal VAAE architecture described in my paper Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks. 
+This repository contains the implementation of the multimodal VAAE architecture described in my paper [Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks](./multimodalVAE.pdf).
 
 ## Overview
 
