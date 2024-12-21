@@ -82,17 +82,22 @@ The model uses a three-phase training strategy:
 ## Citation
 
 If you use this code in your research, please cite:
+
+```bibtex
 @article{kim2024exploring,
 title={Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks},
 author={Kim, Joseph Taewoo},
 journal={Stanford University},
 year={2024}
 }
+```
 
 For the CelebAMask-HQ dataset, please cite:
+```bibtex
 @inproceedings{CelebAMask-HQ,
 title={MaskGAN: Towards Diverse and Interactive Facial Image Manipulation},
 author={Lee, Cheng-Han and Liu, Ziwei and Wu, Lingyun and Luo, Ping},
 booktitle={IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
 year={2020}
 }
+```
