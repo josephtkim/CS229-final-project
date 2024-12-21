@@ -1,6 +1,6 @@
 # Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks
 
-This repository contains the implementation of the multimodal VAAE architecture described in my paper [Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks](./multimodalVAE.pdf).
+This repository contains the implementation of the multimodal VAE architecture described in my paper [Exploring Effectiveness of Multimodal Variational Autoencoders on Text-Image Tasks](./multimodalVAE.pdf).
 
 ## Overview
 
@@ -9,9 +9,31 @@ The model consists of two VAEs (Text VAE and Image VAE) with a shared latent spa
 - Text-to-image generation
 - Image-to-text generation
 
-### Model Architecture
+## Model Architecture
 ![Model Architecture](assets/full-architecture.png)
 
+### Text VAE
+- Fully connected layers for encoder and decoder
+- Binary attribute vector input
+- Sigmoid activation for attribute probability output
+
+### Image VAE
+- Convolutional encoder and decoder networks
+- Patch discriminator for image quality improvement
+- ResidualBlocks and ResidualLinear components
+- VGG16 for perceptual loss computation
+
+## Dataset
+
+We use the CelebAMask-HQ dataset (Lee et al., 2020) with the following specifications:
+- 5,000 examples (split 90/10 for training/validation) selected from the full 30,000 example dataset
+- Images resized to 64x64 resolution (from original 512x512)
+- 10 binary attributes (young, male, female, smiling, eyeglasses, black hair, blond hair, bald, mustache, wearing lipstick)
+
+![Dataset Examples](assets/random_dataset_examples.png)
+
+The CelebAMask-HQ dataset is available for non-commercial research purposes only. For more details, visit the [CelebAMask-HQ project page](https://mmlab.ie.cuhk.edu.hk/projects/CelebA/CelebAMask_HQ.html).
+  
 ## Results
 
 ### Consistency Checking Results
@@ -33,7 +55,7 @@ The model consists of two VAEs (Text VAE and Image VAE) with a shared latent spa
 | **512**    | 0.88     | 0.86      | 0.91   | 0.88     |
 
 ### Latent Space Visualization
-t-SNE visualization of image and text embeddings in the shared latent space, showing clear gender-based clustering and alignment between modalities.
+t-SNE visualization of image and text embeddings in the shared latent space, showing clear gender-based clustering and alignment between modalities:
 ![Latent Space Alignment](assets/paired_tsne_2d_gender.png)
 
 ### Cross-Modal Generation Examples
@@ -43,29 +65,6 @@ t-SNE visualization of image and text embeddings in the shared latent space, sho
 #### Image-to-text generation
 ![Image to Text Generation](assets/image-to-text.png)
 
-## Dataset
-
-We use the CelebAMask-HQ dataset (Lee et al., 2020) with the following specifications:
-- 5,000 examples (split 90/10 for training/validation) selected from the full 30,000 example dataset
-- Images resized to 64x64 resolution (from original 512x512)
-- 10 binary attributes (young, male, female, smiling, eyeglasses, black hair, blond hair, bald, mustache, wearing lipstick)
-
-![Dataset Examples](assets/random_dataset_examples.png)
-
-The CelebAMask-HQ dataset is available for non-commercial research purposes only. For more details, visit the [CelebAMask-HQ project page](https://mmlab.ie.cuhk.edu.hk/projects/CelebA/CelebAMask_HQ.html).
-
-## Model Architecture
-
-### Text VAE
-- Fully connected layers for encoder and decoder
-- Binary attribute vector input
-- Sigmoid activation for attribute probability output
-
-### Image VAE
-- Convolutional encoder and decoder networks
-- Patch discriminator for image quality improvement
-- ResidualBlocks and ResidualLinear components
-- VGG16 for perceptual loss computation
 
 ## Training
 
